@@ -1,3 +1,4 @@
+"""User Settings."""
 import json
 from dataclasses import dataclass
 
@@ -11,6 +12,7 @@ class Settings:
 
 
 def get_settings() -> Settings:
+    """Open user settings file and return python class representation."""
     with open(SETTINGS_FILE) as f:
         data = json.load(f)
         return Settings(file_location=data.get('file_location'))
