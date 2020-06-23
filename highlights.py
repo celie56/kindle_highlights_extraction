@@ -11,6 +11,7 @@ class Highlight:
     title: str = None
     meta_data: str = None
     text: str = None
+    index: int = None
 
     def add_line(self, line: str) -> None:
         """Given a line from a highlights text file, add to container."""
@@ -26,6 +27,9 @@ class Highlight:
         """Returns True if this Highlight has all elements filled in."""
         return all([self.title, self.meta_data, self.text])
 
+    def __lt__(self, other: 'Highlight') -> bool:
+        return self.index < other.index
+
 
 def get_kindle_highlights(highlights_file: str):
     """Given kindle clippings file path, open the path and return the data."""
@@ -38,9 +42,10 @@ def parse_highlights(data: List[str]) -> List[Highlight]:
     output = []
     highlight = Highlight()
 
-    for line in data:
+    for index, line in enumerate(data):
 
         if highlight.filled():
+            highlight.index = index
             output.append(highlight)
             highlight = Highlight()
 
