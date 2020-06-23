@@ -8,8 +8,11 @@ import highlights
 def main(num_highlights):
     """Extract kindle highlights and print latest titles."""
     parsed_highlights = sorted(highlights.extract_highlights())
+    last_title = None
     for highlight in parsed_highlights[-1 * int(num_highlights):]:
-        print(highlight.title)
+        if highlight.title != last_title:
+            last_title = highlight.title
+            print('-' * 5 + ' ' + last_title + ' ' + '-' * 5)
         print(highlight.text)
         print()
 
