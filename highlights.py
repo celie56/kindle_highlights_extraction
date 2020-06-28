@@ -30,6 +30,9 @@ class Highlight:
     def __lt__(self, other: 'Highlight') -> bool:
         return self.index < other.index
 
+    def __hash__(self):
+        return hash(self.title + self.text)
+
 
 def get_kindle_highlights(highlights_file: str):
     """Given kindle clippings file path, open the path and return the data."""
