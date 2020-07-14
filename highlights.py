@@ -1,8 +1,12 @@
 """Highlights from kindle."""
 from dataclasses import dataclass
 from typing import List
+from datetime import datetime, date
 
 import settings
+
+# May 5, 2020
+DATE_FMT = '%B %d, %Y'
 
 
 @dataclass
@@ -12,6 +16,9 @@ class Highlight:
     meta_data: str = None
     text: str = None
     index: int = None
+
+    _split_meta: List[str] = None
+    _date_added: date = None
 
     def add_line(self, line: str) -> None:
         """Given a line from a highlights text file, add to container."""
@@ -27,6 +34,25 @@ class Highlight:
         """Returns True if this Highlight has all elements filled in."""
         return all([self.title, self.meta_data, self.text])
 
+    @property
+    def split_meta(self) -> List[str]:
+        """Helper to split the meta data."""
+        if not self._split_meta:
+            self._split_meta = self.meta_data.split('|')
+        return self._split_meta
+
+    @property
+    def date_added(self) -> date:
+        """Date the highlight was added."""
+        if not self._date_added:
+            text = self.split_meta[-1]
+            start = text.find(',') + 2
+            text = text[start:]
+            end = text.find(':') - 2
+            text = text[:end]
+            self._date_added = datetime.strptime(text, DATE_FMT).date()
+        return self._date_added
+
     def __lt__(self, other: 'Highlight') -> bool:
         return self.index < other.index
 
@@ -36,8 +62,8 @@ class Highlight:
 
 def get_kindle_highlights(highlights_file: str):
     """Given kindle clippings file path, open the path and return the data."""
-    with open(highlights_file) as f:
-        return f.readlines()
+    with open(highlights_file) as input_file:
+        return input_file.readlines()
 
 
 def parse_highlights(data: List[str]) -> List[Highlight]:
