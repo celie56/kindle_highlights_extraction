@@ -1,10 +1,7 @@
 """Highlights from kindle."""
 from dataclasses import dataclass
 from operator import attrgetter
-from typing import (
-    Dict,
-    List,
-)
+from typing import List
 from datetime import datetime, date
 
 import settings
@@ -54,7 +51,7 @@ class Highlight:
             text = text[start:]
             end = text.find(':') - 2
             text = text[:end]
-            text = text.replace(' ','')
+            text = text.replace(' ', '')
             self._date_added = datetime.strptime(text, DATE_FMT).date()
         return self._date_added
 
@@ -64,30 +61,37 @@ class Highlight:
     def __hash__(self):
         return hash(self.title + self.text)
 
+
 @dataclass
 class Reading:
+    """Container for a reading and its highlights."""
     title: str
     highlights: List[Highlight] = None
 
     def add(self, highlight: Highlight) -> None:
+        """Add Highlight to Reading collection."""
         if not self.highlights:
             self.highlights = []
         self.highlights.append(highlight)
 
     @property
     def num_highlights(self) -> int:
+        """Return number of highlights in this reading."""
         return len(self.highlights)
 
     @property
     def last_highlight(self) -> Highlight:
+        """Return latest highlight."""
         return sorted(self.highlights, key=attrgetter('date_added'))[-1]
 
     @property
     def last_highlight_date(self) -> date:
+        """Return latest highlight's date_added."""
         return self.last_highlight.date_added
 
     def __hash__(self):
         return hash(self.title)
+
 
 def get_kindle_highlights(highlights_file: str):
     """Given kindle clippings file path, open the path and return the data."""
@@ -95,8 +99,8 @@ def get_kindle_highlights(highlights_file: str):
         return input_file.readlines()
 
 
-def parse_highlights(data: List[str]) -> Dict[str, Reading]:
-    """Given a list of strings returns map of title to Reading."""
+def parse_highlights(data: List[str]) -> List[Reading]:
+    """Given a list of strings returns List of Readings."""
     output = {}
     highlight = Highlight()
 
@@ -115,10 +119,10 @@ def parse_highlights(data: List[str]) -> Dict[str, Reading]:
         else:
             highlight.add_line(line)
 
-    return output
+    return output.values()
 
 
-def extract_highlights() -> List[Highlight]:
+def extract_highlights() -> List[Reading]:
     """Extract highlights from a user defined file."""
     user_settings = settings.get_settings()
     highlights_data = get_kindle_highlights(user_settings.file_location)
