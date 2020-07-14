@@ -1,19 +1,22 @@
 """Extract Kindle Highlights from text file and show latest."""
 import click
 import highlights
+from operator import attrgetter
 
 
 @click.command()
 @click.argument('num_highlights', required=True)
 def main(num_highlights):
     """Extract kindle highlights and print latest titles."""
-    parsed_highlights = sorted(highlights.extract_highlights())
-    last_title = None
-    for highlight in parsed_highlights[-1 * int(num_highlights):]:
-        if highlight.title != last_title:
-            last_title = highlight.title
-            print('-' * 5 + ' ' + last_title + ' ' + '-' * 5)
-        print(highlight.text)
+    readings = highlights.extract_highlights().values()
+    sorted_readings = sorted(
+        readings,
+        key=attrgetter('last_highlight_date'),
+        reverse=True,
+    )
+    num_highlights = int(num_highlights)
+    for reading in sorted_readings[:num_highlights]:
+        print(f'{reading.title}: {reading.last_highlight_date}')
         print()
 
 

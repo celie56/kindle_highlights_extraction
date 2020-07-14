@@ -1,12 +1,16 @@
 """Highlights from kindle."""
 from dataclasses import dataclass
-from typing import List
+from operator import attrgetter
+from typing import (
+    Dict,
+    List,
+)
 from datetime import datetime, date
 
 import settings
 
 # May 5, 2020
-DATE_FMT = '%B %d, %Y'
+DATE_FMT = '%B%d,%Y'
 
 
 @dataclass
@@ -50,6 +54,7 @@ class Highlight:
             text = text[start:]
             end = text.find(':') - 2
             text = text[:end]
+            text = text.replace(' ','')
             self._date_added = datetime.strptime(text, DATE_FMT).date()
         return self._date_added
 
@@ -59,6 +64,30 @@ class Highlight:
     def __hash__(self):
         return hash(self.title + self.text)
 
+@dataclass
+class Reading:
+    title: str
+    highlights: List[Highlight] = None
+
+    def add(self, highlight: Highlight) -> None:
+        if not self.highlights:
+            self.highlights = []
+        self.highlights.append(highlight)
+
+    @property
+    def num_highlights(self) -> int:
+        return len(self.highlights)
+
+    @property
+    def last_highlight(self) -> Highlight:
+        return sorted(self.highlights, key=attrgetter('date_added'))[-1]
+
+    @property
+    def last_highlight_date(self) -> date:
+        return self.last_highlight.date_added
+
+    def __hash__(self):
+        return hash(self.title)
 
 def get_kindle_highlights(highlights_file: str):
     """Given kindle clippings file path, open the path and return the data."""
@@ -66,16 +95,21 @@ def get_kindle_highlights(highlights_file: str):
         return input_file.readlines()
 
 
-def parse_highlights(data: List[str]) -> List[Highlight]:
-    """Given a list of text strings convert to Highlight objects."""
-    output = []
+def parse_highlights(data: List[str]) -> Dict[str, Reading]:
+    """Given a list of strings returns map of title to Reading."""
+    output = {}
     highlight = Highlight()
 
     for index, line in enumerate(data):
 
         if highlight.filled():
             highlight.index = index
-            output.append(highlight)
+            title = highlight.title
+
+            if title not in output:
+                output[title] = Reading(title)
+            output[title].add(highlight)
+
             highlight = Highlight()
 
         else:
