@@ -71,6 +71,7 @@ class Reading:
     """Container for a reading and its highlights."""
     title: str
     highlights: List[Highlight] = None
+    _scrubbed_title: str = None
 
     def add(self, highlight: Highlight) -> None:
         """Add Highlight to Reading collection."""
@@ -84,6 +85,11 @@ class Reading:
         return len(self.highlights)
 
     @property
+    def first_highlight(self) -> Highlight:
+        """Return latest highlight."""
+        return sorted(self.highlights, key=attrgetter('index'))[0]
+
+    @property
     def last_highlight(self) -> Highlight:
         """Return latest highlight."""
         return sorted(self.highlights, key=attrgetter('index'))[-1]
@@ -93,11 +99,38 @@ class Reading:
         """Return latest highlight's date_added."""
         return self.last_highlight.date_added
 
+    @property
+    def scrubbed_title(self) -> str:
+        """Return title minus common title issues."""
+        if not self._scrubbed_title:
+            title = self.title
+            start = title.find('(')
+            if start > -1:
+                end = title.find(')', start)
+                extra_text = title[start + 1:end]
+                if extra_text in title[:start]:
+                    title = title[:start]
+                else:
+                    title = title[:start] + title[start + 1:end]
+            title = title.replace(' ', '_')
+            title = title.replace('__', '_')
+            title = title.replace('_-_', '-')
+            title = title.replace('_–_', '-')
+            if title[-1] == '_':
+                title = title[:-1]
+            title = title.replace('_', ' ')
+            self._scrubbed_title = title
+        return self._scrubbed_title
+
     def to_markdown(self) -> str:
         """Return Markdown representation as string."""
-        output = f'# {self.title}\n\n'
-        output += '\n\n'.join([h.to_markdown() for h in self.highlights])
-        output += '\n\n---\n'
+        output = f'# {self.scrubbed_title}\n\n'
+        output += f'## Meta\n\n'
+        output += f'Num highlights: {self.num_highlights}\n'
+        output += f'First highlight: {self.first_highlight.date_added}\n'
+        output += f'Latest highlight: {self.last_highlight_date}\n\n'
+        output += f'## Highlights\n\n'
+        output += '\n\n---\n\n'.join([h.to_markdown() for h in self.highlights])
         return output
 
     def __hash__(self):

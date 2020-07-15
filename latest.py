@@ -16,7 +16,7 @@ def main(num_highlights):
     )
     num_highlights = int(num_highlights)
     for reading in sorted_readings[:num_highlights]:
-        print(f'{reading.title}: {reading.last_highlight.index}')
+        print(f'{reading.title}: {reading.last_highlight_date}')
         print()
 
 
