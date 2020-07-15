@@ -1,3 +1,4 @@
 {
-    "file_location": "./ExampleClippings.txt"
+    "file_location": "./ExampleClippings.txt",
+    "output_folder": "/home/chris/notes/generated/reading_highlights"
 }

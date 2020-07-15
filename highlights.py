@@ -55,6 +55,10 @@ class Highlight:
             self._date_added = datetime.strptime(text, DATE_FMT).date()
         return self._date_added
 
+    def to_markdown(self) -> str:
+        """Return Markdown representation as string."""
+        return f'> {self.text}'
+
     def __lt__(self, other: 'Highlight') -> bool:
         return self.index < other.index
 
@@ -82,12 +86,19 @@ class Reading:
     @property
     def last_highlight(self) -> Highlight:
         """Return latest highlight."""
-        return sorted(self.highlights, key=attrgetter('date_added'))[-1]
+        return sorted(self.highlights, key=attrgetter('index'))[-1]
 
     @property
     def last_highlight_date(self) -> date:
         """Return latest highlight's date_added."""
         return self.last_highlight.date_added
+
+    def to_markdown(self) -> str:
+        """Return Markdown representation as string."""
+        output = f'# {self.title}\n\n'
+        output += '\n\n'.join([h.to_markdown() for h in self.highlights])
+        output += '\n\n---\n'
+        return output
 
     def __hash__(self):
         return hash(self.title)

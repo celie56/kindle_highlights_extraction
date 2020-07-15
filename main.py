@@ -9,11 +9,12 @@ def main():
     """Extract kindle highlights and print most highlighted titles."""
     parsed_highlights = highlights.extract_highlights()
     for reading in sorted(
-            parsed_highlights.values(),
+            parsed_highlights,
             key=attrgetter('num_highlights'),
             reverse=True,
     ):
-        print(f'{reading.title}: {reading.num_highlights}')
+        print(reading.to_markdown())
+        # print(f'{reading.title}: {reading.num_highlights}')
 
 
 if __name__ == '__main__':
